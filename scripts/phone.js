@@ -1,12 +1,12 @@
-const loadPhone = async (searchText) => {
+const loadPhone = async (searchText = '13', isShowAll) => {
     const res = await fetch(`https://openapi.programming-hero.com/api/phones?search=${searchText}`);
     const data = await res.json();
     const phones = data.data;
     console.log(phones);
-    displayPhones(phones);
+    displayPhones(phones, isShowAll);
 }
 
-const displayPhones = phones => {
+const displayPhones = (phones, isShowAll) => {
     // console.log(phones);
 
     const phoneContainer = document.getElementById('phone-container');
@@ -15,19 +15,21 @@ const displayPhones = phones => {
 
     // display show all buttons if there are more than 12 phones
     const showAllContainer = document.getElementById('show-all-container')
-    if(phones.length > 12) {
+    if(phones.length > 12 && !isShowAll) {
         showAllContainer.classList.remove('hidden');
     }
     else{
         showAllContainer.classList.add('hidden');
     }
 
-
-    //display only first ten phones
-    phones = phones.slice(0, 5);
+    // console.log('is show all', isShowAll);
+    //display only first ten phones if not show All
+    if(!isShowAll) {
+        phones = phones.slice(0, 5);
+    }
 
     phones.forEach(phone => {
-        console.log(phone);
+        // console.log(phone);
         //create a div
         const phoneCard = document.createElement('div');
         phoneCard.classList = `card bg-gray-100 p-4 shadow-xl`;
@@ -37,8 +39,8 @@ const displayPhones = phones => {
         <div class="card-body">
         <h2 class="card-title">${phone.phone_name}</h2>
         <p>If a dog chews shoes whose shoes does he choose?</p>
-        <div class="card-actions justify-end">
-            <button class="btn btn-primary">Buy Now</button>
+        <div class="card-actions justify-center">
+            <button onclick="handleShowDetail('${phone.slug}'); show_details_modal.showModal()" class="btn btn-primary">Show Details</button>
         </div>
         </div>
         `;
@@ -49,13 +51,30 @@ const displayPhones = phones => {
     toggleLoadingSpinner(false);
 }
 
+//
+const handleShowDetail = async (id) => {
+    // console.log('clicked show details', id);
+
+    // load single phone data 
+    const res = await fetch(`https://openapi.programming-hero.com/api/phone/${id}`);
+    const data = await res.json();
+    const phones = data.data;
+    showPhoneDetails(phones);
+}
+
+const showPhoneDetails = (phone) => {
+    console.log(phone);
+    // show the modal
+    show_details_modal.showModal();
+}
+
 // handle search button
-const handleSearch = () => {
+const handleSearch = (isShowAll) => {
     toggleLoadingSpinner(true);
     const searchField = document.getElementById('search-field');
     const searchText = searchField.value;
     console.log(searchText);
-    loadPhone(searchText);
+    loadPhone(searchText, isShowAll);
 }
 
 const toggleLoadingSpinner = (isLoading) => {
@@ -68,4 +87,9 @@ const toggleLoadingSpinner = (isLoading) => {
     }
 }
 
-// loadPhone();
+// handle show all
+const handleShowAll = () => {
+    handleSearch(true);
+}
+
+loadPhone();
